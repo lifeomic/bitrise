@@ -16,7 +16,7 @@
     "axios": "^0.18.0"
   },
   "devDependencies": {
-    "@lifeomic/eslint-plugin-node": "^1.1.1",
+    "@lifeomic/eslint-plugin-node": "^1.1.2",
     "ava": "^0.25.0",
     "coveralls": "^3.0.2",
     "eslint": "^5.0.1",
@@ -41,5 +41,8 @@
     "functions": 100,
     "lines": 100,
     "statements": 100
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

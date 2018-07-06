@@ -2,7 +2,8 @@ bitrise
 =======
 
 [![Build Status](https://travis-ci.org/lifeomic/bitrise.svg?branch=master)](https://travis-ci.org/lifeomic/bitrise)
-[![Coverage Status](https://coveralls.io/repos/github/lifeomic/bitrise/badge.svg?branch=master)](https://coveralls.io/github/lifeomic/bitrise?branch=master) [![Greenkeeper badge](https://badges.greenkeeper.io/lifeomic/bitrise.svg)](https://greenkeeper.io/)
+[![Coverage Status](https://coveralls.io/repos/github/lifeomic/bitrise/badge.svg?branch=master)](https://coveralls.io/github/lifeomic/bitrise?branch=master)
+[![Greenkeeper badge](https://badges.greenkeeper.io/lifeomic/bitrise.svg)](https://greenkeeper.io/)
 
 A simple API client for the [Bitrise API][bitrise-api].
 
