@@ -1,6 +1,6 @@
 {
   "name": "@lifeomic/bitrise",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Bitrise API client",
   "main": "src/client.js",
   "repository": "https://github.com/lifeomic/bitrise.git",
