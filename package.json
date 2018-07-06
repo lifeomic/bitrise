@@ -5,6 +5,9 @@
   "main": "src/client.js",
   "repository": "https://github.com/lifeomic/bitrise.git",
   "author": "LifeOmic <development@lifeomic.com>",
+  "keywords": [
+    "bitrise"
+  ],
   "license": "MIT",
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
