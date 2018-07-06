@@ -3,7 +3,11 @@
   "version": "0.1.1",
   "description": "Bitrise API client",
   "main": "src/client.js",
-  "repository": "https://github.com/lifeomic/bitrise.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lifeomic/bitrise.git"
+  },
+  "homepage": "https://github.com/lifeomic/bitrise#readme",
   "author": "LifeOmic <development@lifeomic.com>",
   "keywords": [
     "bitrise"
