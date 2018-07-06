@@ -35,8 +35,14 @@ An app has the following attributes:
 
 Trigger a new build for the app. Supported `options` include the following:
 
-  - **commitHash** — the hash of the commit to checkout of SCM. By default
-    the `master` branch is run.
+  - **branch** — the branch to run (or the source of a pull request). The
+    default is `master`.
+  - **commitHash** — the hash of the commit to checkout of SCM. If not provided
+    then the `branch` parameter is used.
+  - **commitMessage** — a description to include on the build.
+  - **disableStatusReporting** — disable sending status reports to SCM.
+  - **pullRequest** — the ID of the pull request being built.
+  - **target** — the destination branch of the pull request.
   - **workflow** — the ID of the Bitrise workflow to run.
 
 Returns a `build` object representing the build that was started. A build has
