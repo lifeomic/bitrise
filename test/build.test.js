@@ -5,7 +5,7 @@ const test = require('ava');
 const uuid = require('uuid/v4');
 
 const { DateTime } = require('luxon');
-const { stubArchivedBuildLog, stubBuildLogStream, stubGetBuild } = require('./stubs');
+const { stubAbortBuild, stubArchivedBuildLog, stubBuildLogStream, stubGetBuild } = require('./stubs');
 
 test.beforeEach((test) => {
   const appSlug = uuid();
@@ -138,4 +138,23 @@ test('following a failed build that has already finished prints the log output a
   } finally {
     write.restore();
   }
+});
+
+test('a build can be aborted', async (test) => {
+  const { appSlug, build, buildSlug, client } = test.context;
+  const stub = stubAbortBuild({ appSlug, axios: client, buildSlug });
+  await build.abort();
+  sinon.assert.calledWithExactly(stub, sinon.match.string);
+});
+
+test('a build can be aborted with a reason', async (test) => {
+  const { appSlug, build, buildSlug, client } = test.context;
+  const reason = uuid();
+  const stub = stubAbortBuild({ appSlug, axios: client, buildSlug });
+  await build.abort({ reason });
+  sinon.assert.calledWithExactly(
+    stub,
+    sinon.match.string,
+    sinon.match({ abort_reason: reason })
+  );
 });

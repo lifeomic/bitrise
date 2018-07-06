@@ -54,6 +54,14 @@ the following attributes:
 References:
   - https://devcenter.bitrise.io/api/v0.1/#post-appsapp-slugbuilds
 
+### async build.abort({ reason })
+
+Abort the build. If supplied the `reason` string will be included in the build
+details.
+
+References:
+ - https://devcenter.bitrise.io/api/v0.1/#post-appsapp-slugbuildsbuild-slugabort
+
 ### async build.describe()
 
 Get all attributes for a build.

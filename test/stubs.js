@@ -22,6 +22,18 @@ const unmatchedRequest = async (...args) => {
   throw new Error(`Failed to match request with arguments: ${JSON.stringify(args, null, 2)}`);
 };
 
+exports.stubAbortBuild = ({ appSlug, axios, buildSlug }) => {
+  const stub = getStub(axios, 'post');
+
+  stub.withArgs(`/apps/${appSlug}/builds/${buildSlug}/abort`)
+    .resolves({
+      data: { status: 'ok' },
+      status: 200
+    });
+
+  return stub;
+};
+
 exports.stubArchivedBuildLog = ({ appSlug, axios, buildSlug, logText }) => {
   const logUrl = 'http://localhost/logs/example.txt';
   const stub = getStub(axios, 'get');

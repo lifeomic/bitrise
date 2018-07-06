@@ -1,3 +1,12 @@
+const abortBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
+  if (options.reason) {
+    await client.post(`/apps/${appSlug}/builds/${buildSlug}/abort`, { abort_reason: options.reason });
+    return;
+  }
+
+  await client.post(`/apps/${appSlug}/builds/${buildSlug}/abort`);
+};
+
 const describeBuild = async ({ appSlug, buildSlug, client }) => {
   const response = await client.get(`/apps/${appSlug}/builds/${buildSlug}`);
   return response.data.data;
@@ -44,6 +53,7 @@ module.exports = ({ appSlug, buildSlug, client }) => {
   const build = { appSlug, buildSlug };
   const state = { appSlug, buildSlug, client };
 
+  build.abort = abortBuild.bind(build, state);
   build.describe = describeBuild.bind(build, state);
   build.follow = followBuild.bind(build, state);
   build.isFinished = isFinished.bind(build, state);
