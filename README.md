@@ -69,10 +69,14 @@ Get all attributes for a build.
 References:
   - https://devcenter.bitrise.io/api/v0.1/#post-appsapp-slugbuilds
 
-### async build.follow()
+### async build.follow({ heartbeat, interval })
 
 Poll on the logs for a build and print them to stdout. An error will be thrown
-if the build fails.
+if the build fails. `interval` is the polling interval in milliseconds
+(default value is `5000`). `heartbeat` is the maximum interval that no output
+can be received in milliseconds. When this value is supplied a heartbeat message
+will be printed if no output has been received. When it is not supplied nothing
+is printed unless output is received from the build.
 
 References:
   - https://devcenter.bitrise.io/api/v0.1/#get-appsapp-slugbuildsbuild-sluglog

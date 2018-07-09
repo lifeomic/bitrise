@@ -68,6 +68,7 @@ test.serial('following a successful build that has not finished prints the log o
 
     for (const chunk of logChunks) {
       sinon.assert.calledWithExactly(write, chunk);
+      sinon.assert.calledWithExactly(clock, sinon.match.func, 5000);
     }
   } finally {
     clock.restore();
@@ -157,4 +158,83 @@ test('a build can be aborted with a reason', async (test) => {
     sinon.match.string,
     sinon.match({ abort_reason: reason })
   );
+});
+
+test.serial('following a build can customize the polling interval', async (test) => {
+  const { appSlug, build, buildSlug, client } = test.context;
+  const interval = 1000;
+
+  const logChunks = [
+    'line one',
+    'line two',
+    'line three'
+  ];
+
+  const buildStub = stubGetBuild({ appSlug, axios: client, buildSlug });
+  buildStub.build.status = 1;
+  stubBuildLogStream({ appSlug, axios: client, buildSlug, logChunks });
+
+  // Cause timers to execute immediately
+  const clock = sinon.stub(global, 'setTimeout').callsArg(0);
+  const write = sinon.stub(process.stdout, 'write');
+
+  try {
+    await build.follow({ interval });
+    sinon.assert.calledWithExactly(clock, sinon.match.func, interval);
+  } finally {
+    clock.restore();
+    write.restore();
+  }
+});
+
+test.serial('a heartbeat can be emitted when a followed build has no new output', async (test) => {
+  const { appSlug, build, buildSlug, client } = test.context;
+  const heartbeat = 10000;
+
+  const logChunks = [
+    'line one', // 0s
+    null, // 5s
+    null, // 10s
+    'line two', // 15s
+    'line three', // 20s
+    null, // 25s
+    null, // 30s
+    null, // 35s
+    'line four' // 40s
+  ];
+
+  const buildStub = stubGetBuild({ appSlug, axios: client, buildSlug });
+  buildStub.build.status = 1;
+  stubBuildLogStream({ appSlug, axios: client, buildSlug, logChunks });
+
+  let currentNow = 0;
+  const tick = () => {
+    const oldNow = currentNow;
+    currentNow += 5000;
+    return oldNow;
+  };
+
+  // Cause timers to execute immediately
+  const clock = sinon.stub(global, 'setTimeout').callsArg(0);
+  const now = sinon.stub(Date, 'now').callsFake(tick);
+  const write = sinon.stub(process.stdout, 'write');
+
+  try {
+    await build.follow({ heartbeat });
+    test.deepEqual(
+      write.args,
+      [
+        [ 'line one' ],
+        [ 'heartbeat: waiting for build output...\n' ],
+        [ 'line two' ],
+        [ 'line three' ],
+        [ 'heartbeat: waiting for build output...\n' ],
+        [ 'line four' ]
+      ]
+    );
+  } finally {
+    clock.restore();
+    now.restore();
+    write.restore();
+  }
 });

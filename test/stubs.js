@@ -69,12 +69,14 @@ exports.stubBuildLogStream = ({ appSlug, axios, buildSlug, logChunks }) => {
       .resolves({
         data: {
           is_archived: chunks.length === 0,
-          log_chunks: [
-            {
-              chunk,
-              position: timestamp
-            }
-          ],
+          log_chunks: chunk
+            ? [
+              {
+                chunk,
+                position: timestamp
+              }
+            ]
+            : [],
           timestamp: chunks.length ? timestamp : null
         },
         status: 200

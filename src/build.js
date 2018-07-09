@@ -12,12 +12,13 @@ const describeBuild = async ({ appSlug, buildSlug, client }) => {
   return response.data.data;
 };
 
-const followBuild = async ({ appSlug, buildSlug, client }) => {
+const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
+  let lastActive = Date.now();
   let timestamp;
 
   do {
     if (timestamp) {
-      await sleep(5000);
+      await sleep(options.interval || 5000);
     }
 
     const parameters = timestamp ? `?timestamp=${timestamp}` : '';
@@ -31,7 +32,15 @@ const followBuild = async ({ appSlug, buildSlug, client }) => {
       break;
     }
 
-    response.data.log_chunks.forEach(({ chunk }) => process.stdout.write(chunk));
+    const now = Date.now();
+    if (response.data.log_chunks.length) {
+      response.data.log_chunks.forEach(({ chunk }) => process.stdout.write(chunk));
+      lastActive = now;
+    } else if (options.heartbeat && (now - lastActive) >= options.heartbeat) {
+      process.stdout.write('heartbeat: waiting for build output...\n');
+      lastActive = now;
+    }
+
     timestamp = response.data.timestamp;
   } while (timestamp);
 
