@@ -41,6 +41,8 @@ Trigger a new build for the app. Supported `options` include the following:
     then the `branch` parameter is used.
   - **commitMessage** — a description to include on the build.
   - **disableStatusReporting** — disable sending status reports to SCM.
+  - **environment** — an object of key value pairs representing environment
+    variables to provide to the build.
   - **pullRequest** — the ID of the pull request being built.
   - **target** — the destination branch of the pull request.
   - **workflow** — the ID of the Bitrise workflow to run.
