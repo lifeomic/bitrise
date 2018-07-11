@@ -185,3 +185,33 @@ test('a source branch can be included on a build', async (test) => {
     })
   );
 });
+
+test('environment variables can be supplied to a build', async (test) => {
+  const { app, client, slug } = test.context;
+  const stub = stubTriggerBuild({ appSlug: slug, axios: client });
+
+  const environment = {
+    VARIABLE_ONE: uuid(),
+    VARIABLE_TWO: uuid()
+  };
+
+  const build = await app.triggerBuild({ environment });
+  test.is(build.appSlug, slug);
+  test.is(build.buildSlug, stub.build.build_slug);
+
+  sinon.assert.calledOnce(client.post);
+  sinon.assert.calledWithExactly(
+    client.post,
+    sinon.match.string,
+    sinon.match({
+      build_params: {
+        environments: [
+          { mapped_to: 'VARIABLE_ONE', value: environment.VARIABLE_ONE },
+          { mapped_to: 'VARIABLE_TWO', value: environment.VARIABLE_TWO }
+        ]
+      },
+      hook_info: { type: 'bitrise' },
+      triggered_by: '@lifeomic/bitrise'
+    })
+  );
+});
