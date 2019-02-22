@@ -26,13 +26,13 @@
   },
   "devDependencies": {
     "@lifeomic/eslint-plugin-node": "^1.1.2",
-    "ava": "^0.25.0",
+    "ava": "^1.2.1",
     "coveralls": "^3.0.2",
     "eslint": "^5.0.1",
     "luxon": "^1.3.1",
     "nock": "^10.0.0",
-    "nyc": "^12.0.2",
-    "sinon": "^6.1.0",
+    "nyc": "^13.3.0",
+    "sinon": "^7.2.4",
     "uuid": "^3.3.2"
   },
   "ava": {
