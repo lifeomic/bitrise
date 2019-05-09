@@ -17,10 +17,11 @@ const buildEnvironment = (environment) => {
 };
 
 const buildParameters = (
-  { branch, commitHash, commitMessage, disableStatusReporting, environment, pullRequest, target, workflow }
+  { branch, tag, commitHash, commitMessage, disableStatusReporting, environment, pullRequest, target, workflow }
 ) => pickBy(
   {
     branch: branch || 'master',
+    tag: tag,
     branch_dest: target,
     commit_hash: commitHash,
     commit_message: commitMessage,
