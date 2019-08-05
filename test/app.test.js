@@ -40,6 +40,71 @@ test('an app can trigger a new build', async (test) => {
   );
 });
 
+test('an app can trigger a build with very fine grain filtering', async (test) => {
+  const { app, client, slug } = test.context;
+
+  const opts = {
+    branch: 'some-branch',
+    target: 'master',
+    commitHash: '3d0faba',
+    commitMessage: 'some message',
+    commitPaths: [
+      {
+        added: ['*foo*'],
+        removed: ['*bar*'],
+        modified: ['*bazz*']
+      }
+    ],
+    diffUrl: 'github.com/org/repo/tree/master/diff/3d0faba',
+    pullRequest: '1',
+    pullRequestAuthor: 'someone',
+    pullRequestHeadBranch: 'some-branch',
+    pullRequestMergeBranch: 'master',
+    pullRequestRepositoryUrl: 'github.com/org/repo',
+    workflow: 'deploy',
+    tag: '1.0.0'
+  };
+
+  const expectedBuildParams = {
+    branch: 'some-branch',
+    branch_dest: 'master',
+    commit_hash: '3d0faba',
+    commit_message: 'some message',
+    commit_paths: [
+      {
+        added: ['*foo*'],
+        removed: ['*bar*'],
+        modified: ['*bazz*']
+      }
+    ],
+    diff_url: 'github.com/org/repo/tree/master/diff/3d0faba',
+    pull_request_author: 'someone',
+    pull_request_head_branch: 'some-branch',
+    pull_request_id: '1',
+    pull_request_merge_branch: 'master',
+    pull_request_repository_url: 'github.com/org/repo',
+    workflow_id: 'deploy',
+    tag: '1.0.0'
+  };
+
+  const stub = stubTriggerBuild({ appSlug: slug, axios: client });
+
+  const build = await app.triggerBuild(opts);
+  test.is(build.appSlug, slug);
+  test.is(build.buildSlug, stub.build.build_slug);
+
+  sinon.assert.calledOnce(client.post);
+  sinon.assert.calledWithExactly(
+    client.post,
+    sinon.match.string,
+    sinon.match({
+      build_params: sinon.match(expectedBuildParams),
+      hook_info: sinon.match({ type: 'bitrise' }),
+      triggered_by: '@lifeomic/bitrise'
+    })
+  );
+});
+
 test('an app can trigger a build for a specific commit', async (test) => {
   const { app, client, slug } = test.context;
   const commitHash = uuid();
