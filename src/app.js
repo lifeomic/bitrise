@@ -61,8 +61,6 @@ const triggerBuild = async ({ client, slug }, options = {}) => {
     triggered_by: project.name
   };
 
-  console.error('build options', buildOptions);
-
   const response = await client.post(`/apps/${slug}/builds`, buildOptions);
   return build({ appSlug: slug, client, buildSlug: response.data.build_slug });
 };
