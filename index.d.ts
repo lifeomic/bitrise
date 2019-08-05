@@ -3,7 +3,13 @@ import { AxiosInstance } from 'axios';
 export interface Client {
   readonly app: { slug: string };
 
-  triggerBuild(buildParams?: BuildParameters): Promise<Build>;
+  /**
+   * @see https://api-docs.bitrise.io/#/builds/build-trigger
+   *
+   * @param buildParams Parameters for the build to trigger. Must
+   * include a git tag or a commit hash, a branch or a workfow ID.
+   */
+  triggerBuild(buildParams?: BuildOptions): Promise<Build>;
 }
 
 export interface AbortOptions {
@@ -67,7 +73,13 @@ export interface CommitPathsFilter {
   readonly removed?: string[];
 }
 
-export interface BuildOptions {
+export type BuildTargetStrategy =
+  | { branch: string }
+  | { commitHash: string }
+  | { workflow: string }
+  | { tag: string };
+
+export interface BaseBuildOptions {
   readonly branch?: string;
   readonly commitHash?: string;
   readonly commitMessage?: string;
@@ -86,8 +98,10 @@ export interface BuildOptions {
   readonly target?: string;
 }
 
+export type BuildOptions = BaseBuildOptions & BuildTargetStrategy;
+
 export interface ClientConfiguration {
   readonly token: string;
 }
 
-export default (config: ClientConfiguration) => Client;
+export default function createClient(config: ClientConfiguration): Client;
