@@ -1,6 +1,18 @@
+const isNil = require('lodash/isNil');
+const negate = require('lodash/negate');
+const pickBy = require('lodash/pickBy');
+
 const abortBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
   if (options.reason) {
-    await client.post(`/apps/${appSlug}/builds/${buildSlug}/abort`, { abort_reason: options.reason });
+    const params = pickBy(
+      {
+        abort_reason: options.reason,
+        abort_with_success: options.withSuccess,
+        skip_notifications: options.skipNotifications
+      },
+      negate(isNil)
+    );
+    await client.post(`/apps/${appSlug}/builds/${buildSlug}/abort`, params);
     return;
   }
 
@@ -22,21 +34,27 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
     }
 
     const parameters = timestamp ? `?timestamp=${timestamp}` : '';
-    const response = await client.get(`/apps/${appSlug}/builds/${buildSlug}/log${parameters}`);
+    const response = await client.get(
+      `/apps/${appSlug}/builds/${buildSlug}/log${parameters}`
+    );
 
     // If the log has already been archived then polling is no good. Just
     // download and print the log data.
     if (response.data.is_archived && !timestamp) {
-      const archiveResponse = await client.get(response.data.expiring_raw_log_url);
+      const archiveResponse = await client.get(
+        response.data.expiring_raw_log_url
+      );
       process.stdout.write(archiveResponse.data);
       break;
     }
 
     const now = Date.now();
     if (response.data.log_chunks.length) {
-      response.data.log_chunks.forEach(({ chunk }) => process.stdout.write(chunk));
+      response.data.log_chunks.forEach(({ chunk }) =>
+        process.stdout.write(chunk)
+      );
       lastActive = now;
-    } else if (options.heartbeat && (now - lastActive) >= options.heartbeat) {
+    } else if (options.heartbeat && now - lastActive >= options.heartbeat) {
       process.stdout.write('heartbeat: waiting for build output...\n');
       lastActive = now;
     }
