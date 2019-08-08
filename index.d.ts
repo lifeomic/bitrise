@@ -1,6 +1,14 @@
 import { AxiosInstance } from 'axios';
 
+export interface AppOptions {
+  readonly slug: string;
+}
+
 export interface Client {
+  app(options: AppOptions): App;
+}
+
+export interface App {
   readonly app: { slug: string };
 
   /**
@@ -31,7 +39,7 @@ export interface AbortResponse {
 export interface BuildDescription {
   readonly abort_reason: string;
   readonly branch: string;
-  readonly build_number: integer;
+  readonly build_number: number;
   readonly commit_hash: string;
   readonly commit_message: string;
   readonly commit_view_url: string;
@@ -39,14 +47,14 @@ export interface BuildDescription {
   readonly finished_at: string;
   readonly is_on_hold: boolean;
   readonly original_build_params: string;
-  readonly pull_request_id: integer;
+  readonly pull_request_id: number;
   readonly pull_request_target_branch: string;
   readonly pull_request_view_url: string;
   readonly slug: string;
   readonly stack_config_type: string;
   readonly stack_identifier: string;
   readonly started_on_worker_at: string;
-  readonly status: integer;
+  readonly status: number;
   readonly status_text: string;
   readonly tag: string;
   readonly triggered_at: string;
@@ -104,4 +112,5 @@ export interface ClientConfiguration {
   readonly token: string;
 }
 
-export default function createClient(config: ClientConfiguration): Client;
+export const createClient: (config: ClientConfiguration) => Client;
+export default createClient;

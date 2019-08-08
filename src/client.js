@@ -3,7 +3,7 @@ const assert = require('assert');
 const axios = require('axios');
 const axiosRetry = require('axios-retry');
 
-module.exports = ({ token }) => {
+const createClient = ({ token }) => {
   assert(token, 'An access token is required');
 
   const client = axios.create({
@@ -17,3 +17,7 @@ module.exports = ({ token }) => {
   instance.app = ({ slug }) => app({ client, slug });
   return instance;
 };
+
+module.exports = createClient;
+module.exports.createClient = createClient;
+module.exports.default = createClient;
