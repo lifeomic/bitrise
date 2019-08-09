@@ -19,5 +19,3 @@ const createClient = ({ token }) => {
 };
 
 module.exports = createClient;
-module.exports.createClient = createClient;
-module.exports.default = createClient;
