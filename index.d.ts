@@ -1,6 +1,14 @@
 import { AxiosInstance } from 'axios';
 
-export interface Client {
+declare interface AppOptions {
+  readonly slug: string;
+}
+
+declare interface Client {
+  app(options: AppOptions): App;
+}
+
+declare interface App {
   readonly app: { slug: string };
 
   /**
@@ -12,26 +20,26 @@ export interface Client {
   triggerBuild(buildParams?: BuildOptions): Promise<Build>;
 }
 
-export interface AbortOptions {
+declare interface AbortOptions {
   readonly reason?: string;
   readonly withSuccess?: boolean;
   readonly skipNotifications?: boolean;
 }
 
-export interface FollowOptions {
+declare interface FollowOptions {
   readonly heartbeat?: number;
   readonly interval?: number;
 }
 
-export interface AbortResponse {
+declare interface AbortResponse {
   readonly status?: string;
   readonly message?: string;
 }
 
-export interface BuildDescription {
+declare interface BuildDescription {
   readonly abort_reason: string;
   readonly branch: string;
-  readonly build_number: integer;
+  readonly build_number: number;
   readonly commit_hash: string;
   readonly commit_message: string;
   readonly commit_view_url: string;
@@ -39,14 +47,14 @@ export interface BuildDescription {
   readonly finished_at: string;
   readonly is_on_hold: boolean;
   readonly original_build_params: string;
-  readonly pull_request_id: integer;
+  readonly pull_request_id: number;
   readonly pull_request_target_branch: string;
   readonly pull_request_view_url: string;
   readonly slug: string;
   readonly stack_config_type: string;
   readonly stack_identifier: string;
   readonly started_on_worker_at: string;
-  readonly status: integer;
+  readonly status: number;
   readonly status_text: string;
   readonly tag: string;
   readonly triggered_at: string;
@@ -54,10 +62,8 @@ export interface BuildDescription {
   readonly triggered_workflow: string;
 }
 
-export interface Build {
-  abort(
-    options?: Pick<AbortOptions, Exclude<AbortOptions, 'reason'>>
-  ): Promise<void>;
+declare interface Build {
+  abort(options?: Omit<AbortOptions, 'reason'>): Promise<void>;
   abort(options?: AbortOptions): Promise<AbortResponse>;
 
   describe(): Promise<BuildDescription>;
@@ -67,19 +73,19 @@ export interface Build {
   isFinished(): Promise<Boolean>;
 }
 
-export interface CommitPathsFilter {
+declare interface CommitPathsFilter {
   readonly added?: string[];
   readonly modified?: string[];
   readonly removed?: string[];
 }
 
-export type BuildTargetStrategy =
+declare type BuildTargetStrategy =
   | { branch: string }
   | { commitHash: string }
   | { workflow: string }
   | { tag: string };
 
-export interface BaseBuildOptions {
+declare interface BaseBuildOptions {
   readonly branch?: string;
   readonly commitHash?: string;
   readonly commitMessage?: string;
@@ -98,10 +104,12 @@ export interface BaseBuildOptions {
   readonly target?: string;
 }
 
-export type BuildOptions = BaseBuildOptions & BuildTargetStrategy;
+declare type BuildOptions = BaseBuildOptions & BuildTargetStrategy;
 
-export interface ClientConfiguration {
+declare interface ClientConfiguration {
   readonly token: string;
 }
 
-export default function createClient(config: ClientConfiguration): Client;
+declare function createClient(config: ClientConfiguration): Client;
+
+export = createClient;
