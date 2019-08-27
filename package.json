@@ -1,6 +1,6 @@
 {
   "name": "@lifeomic/bitrise",
-  "version": "0.5.2-alpha",
+  "version": "0.6.0-alpha",
   "description": "Bitrise API client",
   "main": "src/client.js",
   "types": "index.d.ts",
