@@ -100,9 +100,41 @@ declare interface Build {
 
   describe(): Promise<BuildDescription>;
 
+  /**
+   * @see https://api-docs.bitrise.io/#/build-artifact/artifact-list
+   *
+   * @param listParams Parameters for the artifacts to list.
+   */
+  listArtifacts(listParams?: ListArtifactsOptions): Promise<ArtifactList>;
+
   follow(options?: FollowOptions): Promise<void>;
 
   isFinished(): Promise<Boolean>;
+}
+
+declare interface ArtifactDescription {
+  readonly artifact_meta: object
+  readonly artifact_type: string
+  readonly expiring_download_url: string
+  readonly file_size_bytes: number
+  readonly is_public_page_enabled: boolean
+  readonly public_install_page_url: string
+  readonly slug: string
+  readonly title: string
+}
+
+declare interface Artifact {
+  describe(): Promise<ArtifactDescription>;
+}
+
+declare interface ListArtifactsOptions {
+  readonly next?: string;
+  readonly limit?: number;
+}
+
+declare interface ArtifactList {
+  readonly artifacts: Artifact[];
+  readonly paging: PageInfo;
 }
 
 declare interface CommitPathsFilter {
