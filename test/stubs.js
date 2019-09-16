@@ -114,3 +114,33 @@ exports.stubTriggerBuild = ({ appSlug, axios, body }) => {
   stub.build = build;
   return stub;
 };
+
+exports.stubListBuilds = ({ appSlug, axios, next }) => {
+  const build1 = generateBuild();
+  const build2 = generateBuild();
+
+  const urlParts = [`/apps/${appSlug}/builds`];
+  if (next) {
+    urlParts.push(`?next=${next}`);
+  }
+  const url = urlParts.join('');
+
+  const stub = getStub(axios, 'get')
+    .withArgs(url)
+    .resolves({
+      data: {
+        data: [
+          { slug: build1.build_slug },
+          { slug: build2.build_slug }
+        ],
+        paging: {
+          page_item_limit: 2,
+          total_item_count: 2
+        }
+      },
+      status: 200
+    });
+
+  stub.builds = [build1, build2];
+  return stub;
+};

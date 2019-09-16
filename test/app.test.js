@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const test = require('ava');
 const uuid = require('uuid/v4');
 
-const { stubTriggerBuild } = require('./stubs');
+const { stubTriggerBuild, stubListBuilds } = require('./stubs');
 
 test.beforeEach((test) => {
   const client = axios.create();
@@ -279,4 +279,29 @@ test('environment variables can be supplied to a build', async (test) => {
       triggered_by: '@lifeomic/bitrise'
     })
   );
+});
+
+test('an app can list builds', async (test) => {
+  const { app, client, slug } = test.context;
+  const stub = stubListBuilds({ appSlug: slug, axios: client });
+
+  const buildList = await app.listBuilds();
+  test.is(buildList.builds.length, 2);
+  test.is(buildList.builds[0].appSlug, slug);
+  test.is(buildList.builds[0].buildSlug, stub.builds[0].build_slug);
+  test.is(buildList.builds[1].appSlug, slug);
+  test.is(buildList.builds[1].buildSlug, stub.builds[1].build_slug);
+});
+
+test('an app can list a second page of builds', async (test) => {
+  const { app, client, slug } = test.context;
+  const next = uuid();
+  const stub = stubListBuilds({ appSlug: slug, axios: client, next });
+
+  const buildList = await app.listBuilds({ next });
+  test.is(buildList.builds.length, 2);
+  test.is(buildList.builds[0].appSlug, slug);
+  test.is(buildList.builds[0].buildSlug, stub.builds[0].build_slug);
+  test.is(buildList.builds[1].appSlug, slug);
+  test.is(buildList.builds[1].buildSlug, stub.builds[1].build_slug);
 });

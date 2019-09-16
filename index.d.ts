@@ -18,6 +18,38 @@ declare interface App {
    * include a git tag or a commit hash, a branch or a workfow ID.
    */
   triggerBuild(buildParams?: BuildOptions): Promise<Build>;
+
+  /**
+   * @see https://api-docs.bitrise.io/#/builds/build-list
+   *
+   * @param listParams Parameters for the builds to list.
+   */
+  listBuilds(listParams?: ListBuildOptions): Promise<BuildList>;
+}
+
+declare interface ListBuildOptions {
+  readonly sort_by?: string;
+  readonly branch?: string;
+  readonly workflow?: string;
+  readonly commit_message?: string;
+  readonly trigger_event_type?: string;
+  readonly pull_request_id?: number;
+  readonly build_number?: number;
+  readonly after?: number;
+  readonly before?: number;
+  readonly status?: number;
+  readonly next?: string;
+  readonly limit?: number;
+}
+
+declare interface BuildList {
+  readonly builds: Build[];
+  readonly paging: PageInfo;
+}
+
+declare interface PageInfo {
+  readonly next?: string;
+  readonly total_item_count: number;
 }
 
 declare interface AbortOptions {
