@@ -5,7 +5,7 @@ const test = require('ava');
 const uuid = require('uuid/v4');
 
 const { DateTime } = require('luxon');
-const { stubAbortBuild, stubArchivedBuildLog, stubBuildLogStream, stubGetBuild } = require('./stubs');
+const { stubAbortBuild, stubArchivedBuildLog, stubBuildLogStream, stubGetBuild, stubListArtifacts } = require('./stubs');
 
 test.beforeEach((test) => {
   const appSlug = uuid();
@@ -237,4 +237,33 @@ test.serial('a heartbeat can be emitted when a followed build has no new output'
     now.restore();
     write.restore();
   }
+});
+
+test('an build can list artifacts', async (test) => {
+  const { build, client, appSlug, buildSlug } = test.context;
+  const stub = stubListArtifacts({ appSlug, buildSlug, axios: client });
+
+  const artifactList = await build.listArtifacts();
+  test.is(artifactList.artifacts.length, 2);
+  test.is(artifactList.artifacts[0].appSlug, appSlug);
+  test.is(artifactList.artifacts[0].buildSlug, buildSlug);
+  test.is(artifactList.artifacts[0].artifactSlug, stub.artifacts[0].slug);
+  test.is(artifactList.artifacts[1].appSlug, appSlug);
+  test.is(artifactList.artifacts[1].buildSlug, buildSlug);
+  test.is(artifactList.artifacts[1].artifactSlug, stub.artifacts[1].slug);
+});
+
+test('a build can list a second page of artifacts', async (test) => {
+  const { build, client, appSlug, buildSlug } = test.context;
+  const next = uuid();
+  const stub = stubListArtifacts({ appSlug, buildSlug, axios: client, next });
+
+  const artifactList = await build.listArtifacts({ next });
+  test.is(artifactList.artifacts.length, 2);
+  test.is(artifactList.artifacts[0].appSlug, appSlug);
+  test.is(artifactList.artifacts[0].buildSlug, buildSlug);
+  test.is(artifactList.artifacts[0].artifactSlug, stub.artifacts[0].slug);
+  test.is(artifactList.artifacts[1].appSlug, appSlug);
+  test.is(artifactList.artifacts[1].buildSlug, buildSlug);
+  test.is(artifactList.artifacts[1].artifactSlug, stub.artifacts[1].slug);
 });

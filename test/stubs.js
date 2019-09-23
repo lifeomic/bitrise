@@ -18,6 +18,17 @@ const generateBuild = (options = {}) => ({
   status: 0
 });
 
+const generateArtifact = (options = {}) => ({
+  artifact_meta: {},
+  artifact_type: 'android-apk',
+  expiring_download_url: `https://example.com/downloads/${uuid()}`,
+  file_size_bytes: 100,
+  is_public_page_enabled: true,
+  public_install_page_url: `https://example.com/install/${uuid()}`,
+  slug: options.artifactSlug,
+  title: `Artifact ${uuid()}`
+});
+
 const unmatchedRequest = async (...args) => {
   throw new Error(
     `Failed to match request with arguments: ${JSON.stringify(args, null, 2)}`
@@ -98,6 +109,20 @@ exports.stubGetBuild = ({ appSlug, axios, buildSlug }) => {
   return stub;
 };
 
+exports.stubGetArtifact = ({ appSlug, axios, buildSlug, artifactSlug }) => {
+  const artifact = generateArtifact({ appSlug, buildSlug, artifactSlug });
+
+  const stub = getStub(axios, 'get')
+    .withArgs(`/apps/${appSlug}/builds/${buildSlug}/artifacts/${artifactSlug}`)
+    .resolves({
+      data: { data: artifact },
+      status: 200
+    });
+
+  stub.artifact = artifact;
+  return stub;
+};
+
 exports.stubTriggerBuild = ({ appSlug, axios, body }) => {
   const build = generateBuild();
 
@@ -112,5 +137,65 @@ exports.stubTriggerBuild = ({ appSlug, axios, body }) => {
     });
 
   stub.build = build;
+  return stub;
+};
+
+exports.stubListBuilds = ({ appSlug, axios, next }) => {
+  const build1 = generateBuild();
+  const build2 = generateBuild();
+
+  const urlParts = [`/apps/${appSlug}/builds`];
+  if (next) {
+    urlParts.push(`?next=${next}`);
+  }
+  const url = urlParts.join('');
+
+  const stub = getStub(axios, 'get')
+    .withArgs(url)
+    .resolves({
+      data: {
+        data: [
+          { slug: build1.build_slug },
+          { slug: build2.build_slug }
+        ],
+        paging: {
+          page_item_limit: 2,
+          total_item_count: 2
+        }
+      },
+      status: 200
+    });
+
+  stub.builds = [build1, build2];
+  return stub;
+};
+
+exports.stubListArtifacts = ({ appSlug, buildSlug, axios, next }) => {
+  const artifact1 = generateArtifact();
+  const artifact2 = generateArtifact();
+
+  const urlParts = [`/apps/${appSlug}/builds/${buildSlug}/artifacts`];
+  if (next) {
+    urlParts.push(`?next=${next}`);
+  }
+  const url = urlParts.join('');
+
+  const stub = getStub(axios, 'get')
+    .withArgs(url)
+    .resolves({
+      data: {
+        data: [
+          { slug: artifact1.slug },
+          { slug: artifact2.slug }
+        ],
+        paging: {
+          page_item_limit: 2,
+          total_item_count: 2
+        }
+      },
+      status: 200
+    });
+
+  stub.artifacts = [artifact1, artifact2];
   return stub;
 };

@@ -3,6 +3,7 @@ const isNil = require('lodash/isNil');
 const negate = require('lodash/negate');
 const pickBy = require('lodash/pickBy');
 const project = require('../package.json');
+const queryString = require('query-string');
 
 const buildEnvironment = (environment) => {
   if (!environment) {
@@ -65,8 +66,25 @@ const triggerBuild = async ({ client, slug }, options = {}) => {
   return build({ appSlug: slug, client, buildSlug: response.data.build_slug });
 };
 
+const listBuilds = async ({ client, slug }, options = {}) => {
+  const query = queryString.stringify(options);
+  const queryPart = query ? `?${query}` : '';
+
+  const response = await client.get(`/apps/${slug}/builds${queryPart}`);
+
+  const builds = response.data.data.map((buildInfo) => {
+    return build({ appSlug: slug, client, buildSlug: buildInfo.slug });
+  });
+
+  return {
+    builds,
+    paging: response.data.paging
+  };
+};
+
 module.exports = ({ client, slug }) => {
   const app = { slug };
   app.triggerBuild = triggerBuild.bind(app, { client, slug });
+  app.listBuilds = listBuilds.bind(app, { client, slug });
   return app;
 };

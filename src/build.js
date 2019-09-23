@@ -1,6 +1,8 @@
 const isNil = require('lodash/isNil');
 const negate = require('lodash/negate');
 const pickBy = require('lodash/pickBy');
+const queryString = require('query-string');
+const artifact = require('./artifact');
 
 const abortBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
   if (options.reason) {
@@ -69,6 +71,22 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
   }
 };
 
+const listArtifacts = async ({ appSlug, buildSlug, client }, options = {}) => {
+  const query = queryString.stringify(options);
+  const queryPart = query ? `?${query}` : '';
+
+  const response = await client.get(`/apps/${appSlug}/builds/${buildSlug}/artifacts${queryPart}`);
+  const artifacts = response.data.data.map((artifactDescription) => {
+    const artifactSlug = artifactDescription.slug;
+    return artifact({ appSlug, buildSlug, client, artifactSlug });
+  });
+
+  return {
+    artifacts,
+    paging: response.data.paging
+  };
+};
+
 const isFinished = async ({ appSlug, buildSlug, client }) => {
   const attributes = await describeBuild({ appSlug, buildSlug, client });
   return !!attributes.finished_at;
@@ -82,6 +100,7 @@ module.exports = ({ appSlug, buildSlug, client }) => {
 
   build.abort = abortBuild.bind(build, state);
   build.describe = describeBuild.bind(build, state);
+  build.listArtifacts = listArtifacts.bind(build, state);
   build.follow = followBuild.bind(build, state);
   build.isFinished = isFinished.bind(build, state);
 
