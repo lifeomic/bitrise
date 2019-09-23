@@ -100,7 +100,7 @@ test.serial('a client gives up after too many retries', async (test) => {
 
     sinon.assert.calledOnce(create);
     const httpClient = create.firstCall.returnValue;
-    const { response } = await test.throws(httpClient.get('http://localhost/error'));
+    const { response } = await test.throwsAsync(() => httpClient.get('http://localhost/error'));
     test.is(response.status, 500);
   } finally {
     create.restore();
