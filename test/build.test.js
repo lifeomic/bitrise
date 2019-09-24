@@ -94,7 +94,7 @@ test.serial('following a failed build that has not finished prints the log outpu
   const write = sinon.stub(process.stdout, 'write');
 
   try {
-    await test.throws(build.follow());
+    await test.throwsAsync(() => build.follow());
 
     for (const chunk of logChunks) {
       sinon.assert.calledWithExactly(write, chunk);
@@ -134,7 +134,7 @@ test('following a failed build that has already finished prints the log output a
   const write = sinon.stub(process.stdout, 'write');
 
   try {
-    await test.throws(build.follow());
+    await test.throwsAsync(() => build.follow());
     sinon.assert.calledWithExactly(write, logText);
   } finally {
     write.restore();
