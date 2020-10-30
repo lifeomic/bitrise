@@ -105,6 +105,32 @@ test.serial('following a failed build that has not finished prints the log outpu
   }
 });
 
+test.serial('following an aborted build with is_archived=false prints the log output and then errors', async (test) => {
+  const { appSlug, build, buildSlug, client } = test.context;
+  const logChunks = [
+    'line one',
+    'line two',
+    'line three'
+  ];
+  const buildStub = stubGetBuild({ appSlug, axios: client, buildSlug });
+  buildStub.build.status = 3;
+  stubBuildLogStream({ appSlug, axios: client, buildSlug, logChunks });
+  // Cause timers to execute immediately
+  const clock = sinon.stub(global, 'setTimeout').callsArg(0);
+  const write = sinon.stub(process.stdout, 'write');
+
+  try {
+    await test.throwsAsync(() => build.follow(), null, 'Build has been aborted, not polling logs any more\n');
+
+    for (const chunk of logChunks) {
+      sinon.assert.calledWithExactly(write, chunk);
+    }
+  } finally {
+    clock.restore();
+    write.restore();
+  }
+});
+
 test.serial('following a successful build that has already finished prints the log output', async (test) => {
   const { appSlug, build, buildSlug, client } = test.context;
   const logText = 'some log text';
