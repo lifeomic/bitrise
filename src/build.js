@@ -63,7 +63,7 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
 
     // Sometimes build might have empty log_chunks, have is_archived set to false, have non-empty timestamp, but be aborted
     // (because of bitrise timeout for example). Don't follow such builds forever:
-    attributes = await describeBuild({appSlug, buildSlug, client});
+    attributes = await describeBuild({ appSlug, buildSlug, client });
     if (attributes.status === 3 && !response.data.is_archived && response.data.log_chunks.length === 0) {
       process.stdout.write('Build has been aborted, not polling logs any more\n');
       throw new Error(`Build ${appSlug}/${buildSlug} aborted`);
@@ -71,7 +71,9 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
 
     timestamp = response.data.timestamp;
   } while (timestamp);
-
+  if (!attributes) {
+    attributes = await describeBuild({appSlug, buildSlug, client});
+  }
   if (attributes.status > 1) {
     throw new Error(`Build ${appSlug}/${buildSlug} failed`);
   }
