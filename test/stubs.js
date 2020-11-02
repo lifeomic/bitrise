@@ -154,6 +154,34 @@ exports.stubTriggerBuild = ({ appSlug, axios, body }) => {
   return stub;
 };
 
+function mockBuildData (buildSlug) {
+  return {
+    abort_reason: undefined,
+    branch: 'master',
+    build_number: 0,
+    commit_hash: '86d07c9a9c6f4fc4bf551fcdaa224e57d0c55265',
+    commit_message: 'Commit message',
+    commit_view_url: 'https://bitbucket.org/lifeomic/life-extend/commits/4c9a6a12568f33df3ed373cd7b389e1262404ac1',
+    environment_prepare_finished_at: '2020-11-01T00:00:00',
+    finished_at: '2020-11-01T00:00:00',
+    is_on_hold: true,
+    machine_type_id: '1',
+    original_build_params: 'params',
+    pull_request_id: 0,
+    pull_request_target_branch: 'master',
+    pull_request_view_url: 'https://github.com/lifeomic/bitrise/pull/33',
+    slug: buildSlug,
+    stack_identifier: 'stack-identifier',
+    started_on_worker_at: '2020-11-01T00:00:00',
+    status: 0,
+    status_text: 'in-progress',
+    tag: 'tag',
+    triggered_at: '2020-11-01T00:00:00',
+    triggered_by: 'system',
+    triggered_workflow: 'lifeFastingIOS'
+  };
+}
+
 exports.stubListBuilds = ({ appSlug, axios, next }) => {
   const build1 = generateBuild();
   const build2 = generateBuild();
@@ -169,8 +197,8 @@ exports.stubListBuilds = ({ appSlug, axios, next }) => {
     .resolves({
       data: {
         data: [
-          { slug: build1.build_slug },
-          { slug: build2.build_slug }
+          mockBuildData(build1.build_slug),
+          mockBuildData(build2.build_slug)
         ],
         paging: {
           page_item_limit: 2,
@@ -213,3 +241,5 @@ exports.stubListArtifacts = ({ appSlug, buildSlug, axios, next }) => {
   stub.artifacts = [artifact1, artifact2];
   return stub;
 };
+
+exports.mockBuildData = mockBuildData;

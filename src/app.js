@@ -63,7 +63,7 @@ const triggerBuild = async ({ client, slug }, options = {}) => {
   };
 
   const response = await client.post(`/apps/${slug}/builds`, buildOptions);
-  return build({ appSlug: slug, client, buildSlug: response.data.build_slug });
+  return build({ appSlug: slug, client, buildSlug: response.data.build_slug, buildInfo: response.data });
 };
 
 const listBuilds = async ({ client, slug }, options = {}) => {
@@ -73,7 +73,12 @@ const listBuilds = async ({ client, slug }, options = {}) => {
   const response = await client.get(`/apps/${slug}/builds${queryPart}`);
 
   const builds = response.data.data.map((buildInfo) => {
-    return build({ appSlug: slug, client, buildSlug: buildInfo.slug });
+    return build({
+      appSlug: slug,
+      buildSlug: buildInfo.slug,
+      client,
+      buildInfo
+    });
   });
 
   return {

@@ -3,8 +3,9 @@ const axios = require('axios');
 const sinon = require('sinon');
 const test = require('ava');
 const uuid = require('uuid/v4');
+const omit = require('lodash/omit');
 
-const { stubTriggerBuild, stubListBuilds } = require('./stubs');
+const { stubTriggerBuild, stubListBuilds, mockBuildData } = require('./stubs');
 
 test.beforeEach((test) => {
   const client = axios.create();
@@ -284,13 +285,20 @@ test('environment variables can be supplied to a build', async (test) => {
 test('an app can list builds', async (test) => {
   const { app, client, slug } = test.context;
   const stub = stubListBuilds({ appSlug: slug, axios: client });
+  const mockBuildData1 = mockBuildData(stub.builds[0].build_slug);
+  const mockBuildData2 = mockBuildData(stub.builds[1].build_slug);
 
+  mockBuildData1.buildSlug = stub.builds[0].build_slug;
+  mockBuildData2.buildSlug = stub.builds[1].build_slug;
+  mockBuildData1.appSlug = slug;
+  mockBuildData2.appSlug = slug;
   const buildList = await app.listBuilds();
+  const buildResponseDataOnly1 = omit(buildList.builds[0], ['abort', 'describe', 'follow', 'listArtifacts', 'isFinished']);
+  const buildResponseDataOnly2 = omit(buildList.builds[1], ['abort', 'describe', 'follow', 'listArtifacts', 'isFinished']);
+
   test.is(buildList.builds.length, 2);
-  test.is(buildList.builds[0].appSlug, slug);
-  test.is(buildList.builds[0].buildSlug, stub.builds[0].build_slug);
-  test.is(buildList.builds[1].appSlug, slug);
-  test.is(buildList.builds[1].buildSlug, stub.builds[1].build_slug);
+  test.deepEqual(buildResponseDataOnly1, mockBuildData1);
+  test.deepEqual(buildResponseDataOnly2, mockBuildData2);
 });
 
 test('an app can list a second page of builds', async (test) => {

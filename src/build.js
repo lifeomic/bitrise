@@ -102,8 +102,8 @@ const isFinished = async ({ appSlug, buildSlug, client }) => {
 
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
-module.exports = ({ appSlug, buildSlug, client }) => {
-  const build = { appSlug, buildSlug };
+module.exports = ({ appSlug, buildSlug, client, buildInfo }) => {
+  const build = { appSlug, buildSlug, ...buildInfo };
   const state = { appSlug, buildSlug, client };
 
   build.abort = abortBuild.bind(build, state);
