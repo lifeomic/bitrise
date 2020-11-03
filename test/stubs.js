@@ -64,6 +64,20 @@ exports.stubArchivedBuildLog = ({ appSlug, axios, buildSlug, logText }) => {
   });
 };
 
+exports.stubEmptyNonArchivedBuildLog = ({ appSlug, axios, buildSlug }) => {
+  const logUrl = 'http://localhost/logs/example.txt';
+  const stub = getStub(axios, 'get');
+
+  stub.withArgs(`/apps/${appSlug}/builds/${buildSlug}/log`).resolves({
+    data: {
+      expiring_raw_log_url: logUrl,
+      is_archived: false,
+      log_chunks: []
+    },
+    status: 200
+  });
+};
+
 exports.stubBuildLogStream = ({ appSlug, axios, buildSlug, logChunks }) => {
   const logStub = getStub(axios, 'get');
 

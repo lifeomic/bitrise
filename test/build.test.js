@@ -5,7 +5,7 @@ const test = require('ava');
 const uuid = require('uuid/v4');
 
 const { DateTime } = require('luxon');
-const { stubAbortBuild, stubArchivedBuildLog, stubBuildLogStream, stubGetBuild, stubListArtifacts } = require('./stubs');
+const { stubAbortBuild, stubArchivedBuildLog, stubBuildLogStream, stubGetBuild, stubListArtifacts, stubEmptyNonArchivedBuildLog } = require('./stubs');
 
 test.beforeEach((test) => {
   const appSlug = uuid();
@@ -107,24 +107,15 @@ test.serial('following a failed build that has not finished prints the log outpu
 
 test.serial('following an aborted build with is_archived=false prints the log output and then errors', async (test) => {
   const { appSlug, build, buildSlug, client } = test.context;
-  const logChunks = [
-    'line one',
-    'line two',
-    'line three'
-  ];
   const buildStub = stubGetBuild({ appSlug, axios: client, buildSlug });
   buildStub.build.status = 3;
-  stubBuildLogStream({ appSlug, axios: client, buildSlug, logChunks });
+  stubEmptyNonArchivedBuildLog({ appSlug, axios: client, buildSlug });
   // Cause timers to execute immediately
   const clock = sinon.stub(global, 'setTimeout').callsArg(0);
   const write = sinon.stub(process.stdout, 'write');
 
   try {
-    await test.throwsAsync(() => build.follow(), null, 'Build has been aborted, not polling logs any more\n');
-
-    for (const chunk of logChunks) {
-      sinon.assert.calledWithExactly(write, chunk);
-    }
+    await test.throwsAsync(() => build.follow(), { message: `Build ${buildStub.build.slug}/${buildStub.build.build_slug} aborted` });
   } finally {
     clock.restore();
     write.restore();
