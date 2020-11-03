@@ -65,7 +65,6 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
     // (because of bitrise timeout for example). Don't follow such builds forever:
     attributes = await describeBuild({ appSlug, buildSlug, client });
     if (attributes.status === 3 && !response.data.is_archived && response.data.log_chunks.length === 0) {
-      console.log('inside');
       process.stdout.write('Build has been aborted, not polling logs any more\n');
       throw new Error(`Build ${appSlug}/${buildSlug} aborted`);
     }
