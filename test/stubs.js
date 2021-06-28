@@ -72,7 +72,8 @@ exports.stubEmptyNonArchivedBuildLog = ({ appSlug, axios, buildSlug }) => {
     data: {
       expiring_raw_log_url: logUrl,
       is_archived: false,
-      log_chunks: []
+      log_chunks: [],
+      timestamp: new Date().toISOString()
     },
     status: 200
   });
