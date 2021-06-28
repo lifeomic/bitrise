@@ -69,6 +69,12 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
       throw new Error(`Build ${appSlug}/${buildSlug} aborted`);
     }
 
+    // If the build is completed and there are no more log chunks
+    if (!!attributes.build_finished && response.data.log_chunks.length === 0) {
+      // No need to keep watching a completed build
+      break;
+    }
+
     timestamp = response.data.timestamp;
   } while (timestamp);
   if (!attributes) {
