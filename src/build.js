@@ -30,9 +30,14 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
   let lastActive = Date.now();
   let timestamp;
   let attributes;
+  let lastPosition = 0;
+  // Start with the interval provided, or the default, but if the build
+  // completes then the interval will be dropped to 0 to pull logs as fast
+  // as possible
+  let interval = options.interval || 5000;
   do {
-    if (timestamp) {
-      await sleep(options.interval || 5000);
+    if (timestamp && interval > 0) {
+      await sleep(interval);
     }
 
     const parameters = timestamp ? `?timestamp=${timestamp}` : '';
@@ -41,7 +46,8 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
     );
 
     // If the log has already been archived then polling is no good. Just
-    // download and print the log data.
+    // download and print the log data. This handles the case where the
+    // very first request finds an archived build
     if (response.data.is_archived && !timestamp) {
       const archiveResponse = await client.get(
         response.data.expiring_raw_log_url
@@ -52,8 +58,15 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
 
     const now = Date.now();
     if (response.data.log_chunks.length) {
-      response.data.log_chunks.forEach(({ chunk }) =>
-        process.stdout.write(chunk)
+      response.data.log_chunks.forEach(({ chunk, position }) => {
+        // When requesting the logs by timestamps returned from previous
+        // requests, duplicate chunks are included in the response. Only
+        // log new chunks
+        if (position > lastPosition) {
+          process.stdout.write(chunk);
+          lastPosition = position;
+        }
+      }
       );
       lastActive = now;
     } else if (options.heartbeat && now - lastActive >= options.heartbeat) {
@@ -70,8 +83,21 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
     }
 
     // If the build is completed and there are no more log chunks
-    if (!!attributes.build_finished && response.data.log_chunks.length === 0) {
-      // No need to keep watching a completed build
+    if (attributes.finished_at) {
+      if (response.data.log_chunks.length === 0) {
+        // No need to keep watching a completed build
+        break;
+      }
+
+      // If the build is done and chuncks are being seeing, then pull them
+      // as fast as possible
+      interval = 0;
+    }
+
+    // If the log was being followed and it switched to streaming before the
+    // end was hit, then end early and warn about missing logs
+    if (response.data.is_archived) {
+      process.stdout.write('Build has been archived before all the logs were streamed. Check the Bitrise console for the full logs\n');
       break;
     }
 

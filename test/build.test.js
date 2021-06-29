@@ -128,7 +128,7 @@ test.serial('following a successful build that has already finished prints the l
 
   const buildStub = stubGetBuild({ appSlug, axios: client, buildSlug });
   buildStub.build.status = 1;
-  buildStub.build.build_finished = new Date().toISOString();
+  buildStub.build.finished_at = new Date().toISOString();
   stubArchivedBuildLog({ appSlug, axios: client, buildSlug, logText });
 
   const write = sinon.stub(process.stdout, 'write');
@@ -147,7 +147,7 @@ test.serial('following a successful build, not yet archived, prints the log outp
 
   const buildStub = stubGetBuild({ appSlug, axios: client, buildSlug });
   buildStub.build.status = 1;
-  buildStub.build.build_finished = new Date().toISOString();
+  buildStub.build.finished_at = new Date().toISOString();
   // The client fetchs logs until no more log chunks are returned
   // The empty finaly chunck signals the end of the log (when the build is finished)
   stubBuildLogStream({ appSlug, axios: client, buildSlug, logChunks: [logText, ''] });
@@ -159,6 +159,34 @@ test.serial('following a successful build, not yet archived, prints the log outp
     sinon.assert.calledOnce(write);
     sinon.assert.calledWithExactly(write, logText);
   } finally {
+    write.restore();
+  }
+});
+
+test.serial('when a build is finished but not archived, the logs are pulled as fast as possible', async (test) => {
+  const { appSlug, build, buildSlug, client } = test.context;
+  const logText = ['some log text', 'log text 2', 'log text 3'];
+
+  const buildStub = stubGetBuild({ appSlug, axios: client, buildSlug });
+  buildStub.build.status = 1;
+  buildStub.build.finished_at = new Date().toISOString();
+  // The client fetchs logs until no more log chunks are returned
+  // The empty finaly chunck signals the end of the log (when the build is finished)
+  stubBuildLogStream({ appSlug, axios: client, buildSlug, logChunks: [...logText, ''] });
+
+  // Cause timers to execute immediately
+  const clock = sinon.stub(global, 'setTimeout').callsArg(0);
+  // Track writes
+  const write = sinon.stub(process.stdout, 'write');
+
+  try {
+    await build.follow();
+    for (const chunk of logText) {
+      sinon.assert.calledWithExactly(write, chunk);
+    }
+    sinon.assert.notCalled(clock);
+  } finally {
+    clock.restore();
     write.restore();
   }
 });
@@ -269,7 +297,8 @@ test.serial('a heartbeat can be emitted when a followed build has no new output'
         ['line two'],
         ['line three'],
         ['heartbeat: waiting for build output...\n'],
-        ['line four']
+        ['line four'],
+        ['Build has been archived before all the logs were streamed. Check the Bitrise console for the full logs\n']
       ]
     );
   } finally {

@@ -85,26 +85,37 @@ exports.stubBuildLogStream = ({ appSlug, axios, buildSlug, logChunks }) => {
   const chunks = logChunks.slice();
   let timestamp = 1;
 
+  let previousChunk = null;
+
   while (chunks.length) {
     const chunk = chunks.shift();
-    const parameters = timestamp > 1 ? `?timestamp=${timestamp - 1}` : '';
+    const parameters = timestamp > 1 ? `?timestamp=${new Date(timestamp - 1).toISOString()}` : '';
     const logUrl = `/apps/${appSlug}/builds/${buildSlug}/log${parameters}`;
+
+    const newChunk = chunk ? {
+      chunk,
+      position: timestamp
+    } : null;
+
+    const newChunks = newChunk ? [newChunk] : [];
+    // When there are two chunks in a row, then add duplicate values to mimic
+    // Bitrise sometimes returning duplicate chunks
+    const oldChunks = newChunk && previousChunk ? [previousChunk] : [];
 
     logStub.withArgs(logUrl).resolves({
       data: {
         is_archived: chunks.length === 0,
-        log_chunks: chunk
-          ? [
-            {
-              chunk,
-              position: timestamp
-            }
-          ]
-          : [],
-        timestamp: chunks.length ? timestamp : null
+        log_chunks: [
+          ...oldChunks,
+          ...newChunks
+        ],
+        // When the build is archived, Bitrise starts to return a sentinel date constant
+        timestamp: chunks.length ? new Date(timestamp).toISOString() : '0001-01-01T00:00:00Z'
       },
       status: 200
     });
+
+    previousChunk = newChunk;
 
     timestamp++;
   }
