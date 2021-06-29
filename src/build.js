@@ -89,12 +89,12 @@ const followBuild = async ({ appSlug, buildSlug, client }, options = {}) => {
         break;
       }
 
-      // If the build is done and chuncks are being seeing, then pull them
+      // If the build is done and chunks are being seen, then pull them
       // as fast as possible
       interval = 0;
     }
 
-    // If the log was being followed and it switched to streaming before the
+    // If the log was being followed and it is archived before the
     // end was hit, then end early and warn about missing logs
     if (response.data.is_archived) {
       process.stdout.write('Build has been archived before all the logs were streamed. Check the Bitrise console for the full logs\n');
