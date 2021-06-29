@@ -149,7 +149,7 @@ test.serial('following a successful build, not yet archived, prints the log outp
   buildStub.build.status = 1;
   buildStub.build.finished_at = new Date().toISOString();
   // The client fetchs logs until no more log chunks are returned
-  // The empty finaly chunck signals the end of the log (when the build is finished)
+  // The empty finaly chunk signals the end of the log (when the build is finished)
   stubBuildLogStream({ appSlug, axios: client, buildSlug, logChunks: [logText, ''] });
 
   const write = sinon.stub(process.stdout, 'write');
@@ -171,7 +171,7 @@ test.serial('when a build is finished but not archived, the logs are pulled as f
   buildStub.build.status = 1;
   buildStub.build.finished_at = new Date().toISOString();
   // The client fetchs logs until no more log chunks are returned
-  // The empty finaly chunck signals the end of the log (when the build is finished)
+  // The empty finaly chunk signals the end of the log (when the build is finished)
   stubBuildLogStream({ appSlug, axios: client, buildSlug, logChunks: [...logText, ''] });
 
   // Cause timers to execute immediately
