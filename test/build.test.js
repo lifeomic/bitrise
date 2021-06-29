@@ -128,12 +128,35 @@ test.serial('following a successful build that has already finished prints the l
 
   const buildStub = stubGetBuild({ appSlug, axios: client, buildSlug });
   buildStub.build.status = 1;
+  buildStub.build.build_finished = new Date().toISOString();
   stubArchivedBuildLog({ appSlug, axios: client, buildSlug, logText });
 
   const write = sinon.stub(process.stdout, 'write');
 
   try {
     await build.follow();
+    sinon.assert.calledWithExactly(write, logText);
+  } finally {
+    write.restore();
+  }
+});
+
+test.serial('following a successful build, not yet archived, prints the log output', async (test) => {
+  const { appSlug, build, buildSlug, client } = test.context;
+  const logText = 'some log text';
+
+  const buildStub = stubGetBuild({ appSlug, axios: client, buildSlug });
+  buildStub.build.status = 1;
+  buildStub.build.build_finished = new Date().toISOString();
+  // The client fetchs logs until no more log chunks are returned
+  // The empty finaly chunck signals the end of the log (when the build is finished)
+  stubBuildLogStream({ appSlug, axios: client, buildSlug, logChunks: [logText, ''] });
+
+  const write = sinon.stub(process.stdout, 'write');
+
+  try {
+    await build.follow();
+    sinon.assert.calledOnce(write);
     sinon.assert.calledWithExactly(write, logText);
   } finally {
     write.restore();
@@ -241,12 +264,12 @@ test.serial('a heartbeat can be emitted when a followed build has no new output'
     test.deepEqual(
       write.args,
       [
-        [ 'line one' ],
-        [ 'heartbeat: waiting for build output...\n' ],
-        [ 'line two' ],
-        [ 'line three' ],
-        [ 'heartbeat: waiting for build output...\n' ],
-        [ 'line four' ]
+        ['line one'],
+        ['heartbeat: waiting for build output...\n'],
+        ['line two'],
+        ['line three'],
+        ['heartbeat: waiting for build output...\n'],
+        ['line four']
       ]
     );
   } finally {

@@ -15,7 +15,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "coverage": "nyc report --reporter=text-lcov > ./.nyc_output/lcov.info",
     "lint": "eslint .",
     "pretest": "yarn lint",
     "test": "nyc ava -v"
