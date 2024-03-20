@@ -21,7 +21,7 @@
     "test": "nyc ava -v"
   },
   "dependencies": {
-    "axios": "^0.25.0",
+    "axios": "^0.28.0",
     "axios-retry": "^3.2.4",
     "lodash": "^4.17.10",
     "query-string": "^6.8.3"
